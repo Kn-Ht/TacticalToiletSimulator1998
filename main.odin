@@ -10,7 +10,9 @@ main :: proc() {
     game := game_init()
     defer game_close(&game)
 
-    game_start(&game)
+    flags :: rl.ConfigFlags{rl.ConfigFlag.WINDOW_RESIZABLE}
+
+    game_start(&game, flags)
 
     for !game.should_quit {
         game_tick(&game)
