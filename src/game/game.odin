@@ -42,35 +42,46 @@ game_close :: proc(g: ^Game) {
 }
 
 game_update :: proc(g: ^Game) {
-    g.should_quit |= rl.WindowShouldClose()
+    using g
+
+    should_quit |= rl.WindowShouldClose()
 
     if rl.IsKeyPressed(rl.KeyboardKey.F1) {
-        g.editor_mode = !g.editor_mode;
+        editor_mode = !editor_mode;
     }
+    if rl.IsKeyPressed(rl.KeyboardKey.F12) do should_quit = true
 }
 
 game_tick :: proc(g: ^Game) {
+    using g
+    using rl
+
     game_update(g)
 
-    rl.BeginDrawing()
-    defer rl.EndDrawing()
+    BeginDrawing()
+    defer EndDrawing()
 
-    rl.ClearBackground(rl.BLACK)
+    ClearBackground(BLACK)
 
     // 3D
     {
-        rl.BeginMode3D(g.camera)
-        defer rl.EndMode3D()
+        BeginMode3D(g.camera)
+        defer EndMode3D()
 
-        if g.editor_mode {
-            editor_3d(g)
+        if editor_mode {
+            player_look_editor(g)
+            player_move_editor(g)
         } else {
-    
+            player_look(g)
+            player_move(g)
         }
+
+        DrawGrid(100, 1)
+        
     }
 
     // 2D
-    if g.editor_mode {
+    if editor_mode {
         editor_ui(g)
     } else {
         

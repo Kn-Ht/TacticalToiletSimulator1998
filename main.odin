@@ -1,6 +1,5 @@
 package main
 
-import "core:fmt"
 import rl "vendor:raylib"
 import "src/game"
 
@@ -10,11 +9,9 @@ main :: proc() {
     game := game_init()
     defer game_close(&game)
 
-    flags :: rl.ConfigFlags{rl.ConfigFlag.WINDOW_RESIZABLE}
+    flags :: rl.ConfigFlags{.WINDOW_RESIZABLE, .MSAA_4X_HINT}
 
     game_start(&game, flags)
 
-    for !game.should_quit {
-        game_tick(&game)
-    }
+    for !game.should_quit do game_tick(&game)
 }
