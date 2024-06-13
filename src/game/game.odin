@@ -1,26 +1,31 @@
 package game
 
 import rl "vendor:raylib"
+import "../input"
+import "../assets"
 
 Game :: struct {
     should_quit: bool,
     editor_mode: bool,
-    camera: rl.Camera3D
+    res: assets.AssetManager,
+    player: Player,
 }
 
 game_init :: proc() -> Game {
     return Game {
-        camera = {
+        should_quit = false,
+        editor_mode = false,
+        player = player_new(rl.Camera3D {
             fovy = 75.0,
             position = {1, 1, 1},
             projection = rl.CameraProjection.PERSPECTIVE,
             target = {0, 0, 0},
             up = {0, 1, 0}
-        }
+        }),
     }
 }
 
-game_start :: proc(g: ^Game, flags: rl.ConfigFlags) {
+game_start :: proc(using g: ^Game, flags: rl.ConfigFlags) {
     rl.SetConfigFlags(flags)
 
     rl.InitWindow(800, 600, "TacticalToiletSimulator1998")
@@ -30,30 +35,30 @@ game_start :: proc(g: ^Game, flags: rl.ConfigFlags) {
     rl.SetExitKey(rl.KeyboardKey.KEY_NULL)
     rl.DisableCursor()
 
-    load_assets()
+    res = assets.asset_manager_create()
 }
 
-game_close :: proc(g: ^Game) {
-    unload_assets()
-
+game_close :: proc(using g: ^Game) {
     rl.EnableCursor()
     rl.CloseAudioDevice();
+
+    // Free all objects
+    assets.asset_manager_destroy(&res)
+    free_all()
+
     rl.CloseWindow();
 }
 
-game_update :: proc(g: ^Game) {
-    using g
+game_update :: proc(using g: ^Game) {
+    using input
 
     should_quit |= rl.WindowShouldClose()
 
-    if rl.IsKeyPressed(rl.KeyboardKey.F1) {
-        editor_mode = !editor_mode;
-    }
-    if rl.IsKeyPressed(rl.KeyboardKey.F12) do should_quit = true
+    if rl.IsKeyPressed(keymap.ed_toggle) do editor_mode = !editor_mode
+    if rl.IsKeyPressed(keymap.ed_exit) do should_quit = true
 }
 
-game_tick :: proc(g: ^Game) {
-    using g
+game_tick :: proc(using g: ^Game) {
     using rl
 
     game_update(g)
@@ -65,7 +70,7 @@ game_tick :: proc(g: ^Game) {
 
     // 3D
     {
-        BeginMode3D(g.camera)
+        BeginMode3D(player.camera)
         defer EndMode3D()
 
         if editor_mode {

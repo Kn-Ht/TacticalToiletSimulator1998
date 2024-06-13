@@ -7,7 +7,7 @@ editor_ui :: proc(g: ^Game) {
 }
 
 editor_3d :: proc(g: ^Game) {
-    camera_look(&g.camera, 1e-2/2)
+    camera_look(&g.player.camera, 1e-2/2)
 
     rl.DrawGrid(100, 1.0)
 }
